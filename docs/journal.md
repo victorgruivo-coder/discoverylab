@@ -9,6 +9,13 @@ Built:
 - Strict TS base config shared across packages
 - ESLint 10 flat config with type-aware linting
 - Prettier with format:check gate
+- Audit pass: M1 PASS WITH NOTES. No missing items. Extras
+  reviewed and approved (ESLint 10 flat config, import-x,
+  extra tsconfig strict flags, pnpm-workspace keys).
+- Reverted .vscode/settings.json after Prettier reformatted
+  it; added to .prettierignore.
+- Learned: read-only audit sessions can't run bash, so
+  acceptance gates must be run by hand in the VS Code terminal.
 
 Decisions:
 
