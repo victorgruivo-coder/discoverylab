@@ -79,6 +79,17 @@ Last updated: 2026-09-14
 
 ## Stack
 
+## Runtime / build strategy
+
+- Dev: `tsx` as the TypeScript loader for `apps/api` (and any
+  workspace package that needs to run directly).
+- Prod: `tsc` builds `apps/api` and `packages/shared` to `dist/`;
+  Node runs compiled JS.
+- `packages/shared` will get a real build step in M4 or M5 so that
+  Node can resolve `.js` from `.ts` sources at runtime.
+- Rationale: typecheck-only isn't enough for a real server. But
+  forcing a rebuild in dev kills feedback speed. Split dev/prod.
+
 ### Frontend
 - React + TypeScript (strict)
 - Vite

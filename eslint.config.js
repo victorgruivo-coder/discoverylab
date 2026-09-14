@@ -36,6 +36,12 @@ export default tseslint.config(
       'import-x/resolver-next': [
         createNodeResolver({
           extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts', '.json'],
+          // NodeNext requires `./x.js` specifiers that map to `x.ts` sources.
+          extensionAlias: {
+            '.js': ['.ts', '.js'],
+            '.mjs': ['.mts', '.mjs'],
+            '.cjs': ['.cts', '.cjs'],
+          },
         }),
       ],
     },

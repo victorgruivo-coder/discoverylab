@@ -1,6 +1,12 @@
-import { okSchema, type Ok } from '@discoverylab/shared';
+import {
+  discoveryCreateInput,
+  type DiscoveryCreateInput,
+} from '@discoverylab/shared';
 
-/** Placeholder export; replaced by the Vite entry point in a later milestone. */
-export function createInitialState(): Ok {
-  return okSchema.parse({ ok: false });
+/**
+ * Temporary placeholder: the M1 `okSchema`/`Ok` exports were removed in
+ * Milestone 2, and the Vite entry point only lands in Milestone 9.
+ */
+export function parseDiscoveryDraft(value: unknown): DiscoveryCreateInput {
+  return discoveryCreateInput.parse(value);
 }
