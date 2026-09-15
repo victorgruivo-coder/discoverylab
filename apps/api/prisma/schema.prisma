@@ -1,0 +1,106 @@
+// DiscoveryLab database schema (Milestone 3).
+//
+// Enum values are lowercase and must stay identical to
+// packages/shared/src/enums.ts; `pnpm --filter @discoverylab/api run
+// verify:enums` fails if the two drift apart.
+//
+// Table and column names are snake_case via @@map/@map to match
+// docs/decisions.md (IDs and DB conventions). Prisma field names stay
+// camelCase for application code.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DiscoveryStatus {
+  draft
+  active
+  completed
+  archived
+}
+
+enum DiscoveryType {
+  feature
+  product
+  growth
+  other
+}
+
+enum OstNodeType {
+  outcome
+  opportunity
+  solution
+  experiment
+}
+
+model User {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  sessions    Session[]
+  discoveries Discovery[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  userAgent String?  @map("user_agent")
+  ip        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model Discovery {
+  id              String          @id @default(uuid(7)) @db.Uuid
+  createdByUserId String          @map("created_by_user_id") @db.Uuid
+  name            String
+  leadName        String          @map("lead_name")
+  type            DiscoveryType   @default(feature)
+  status          DiscoveryStatus @default(draft)
+  startDate       DateTime        @map("start_date") @db.Date
+  endDate         DateTime?       @map("end_date") @db.Date
+  deletedAt       DateTime?       @map("deleted_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  createdBy          User                @relation(fields: [createdByUserId], references: [id])
+  frameworkInstances FrameworkInstance[]
+
+  @@index([createdByUserId, deletedAt])
+  @@index([status])
+  @@map("discoveries")
+}
+
+model FrameworkInstance {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  discoveryId  String   @map("discovery_id") @db.Uuid
+  /// Fixed keys: 'problem-statement' | 'jtbd' | 'ost' | 'rice' | 'decision-log'
+  frameworkKey String   @map("framework_key")
+  content      Json
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  discovery Discovery @relation(fields: [discoveryId], references: [id], onDelete: Cascade)
+
+  @@unique([discoveryId, frameworkKey])
+  @@index([discoveryId])
+  @@map("framework_instances")
+}

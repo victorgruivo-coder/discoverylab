@@ -9,23 +9,21 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      // Prisma 7 generates the client into a real directory; it is not ours to lint.
+      '**/generated/**',
+    ],
   },
   eslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   importXFlatConfigs.recommended,
   {
-    // JS config files (eslint.config.js, ...) live outside the TS projects,
-    // so type-aware rules are disabled for them.
-    files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
-    extends: [tseslint.configs.disableTypeChecked],
-  },
-  {
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ['eslint.config.js'],
-        },
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
       globals: {
@@ -80,6 +78,18 @@ export default tseslint.config(
         },
       ],
       'import-x/no-duplicates': 'error',
+    },
+  },
+  {
+    // Config and build scripts live outside every tsconfig project, so parse
+    // them without type information and skip the type-checked rules. This must
+    // come after the block above: later configs win for parserOptions.
+    files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/prisma.config.ts'],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+      },
     },
   },
   prettier,

@@ -4,9 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset",
+    "db:studio": "prisma studio",
+    "verify:enums": "node scripts/verify-enums.mjs"
   },
   "dependencies": {
-    "@discoverylab/shared": "workspace:*"
+    "@discoverylab/shared": "workspace:*",
+    "@prisma/client": "7.10.0"
+  },
+  "devDependencies": {
+    "prisma": "7.10.0",
+    "tsx": "4.23.13"
   }
 }

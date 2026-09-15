@@ -6,6 +6,10 @@ dist/
 coverage/
 *.tsbuildinfo
 
+# Prisma 7 generates the client here (output is mandatory with the
+# `prisma-client` generator); regenerate with `pnpm db:generate`.
+apps/api/generated/
+
 # Environment
 .env
 .env.*
