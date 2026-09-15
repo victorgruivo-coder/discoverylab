@@ -113,6 +113,20 @@ Last updated: 2026-09-14
 - Local dev: Docker Compose
 - Prod: managed Postgres (Neon or Supabase)
 
+## Database tooling
+
+- Prisma 7.10.0 (current stable major).
+- Datasource URL lives in `apps/api/prisma.config.ts`, not
+  `schema.prisma`. Loaded via Node 22's `process.loadEnvFile()`.
+- Generator: `prisma-client`, output: `apps/api/generated/prisma`.
+- Driver adapter: `@prisma/adapter-pg` + `pg`.
+- `apps/api/generated/` is gitignored.
+- Chosen over Prisma 6.19.3 because the project is greenfield and
+  the migration cost is lowest now. Chosen over adding `dotenv`
+  because Node 22 has an equivalent builtin.
+- Enum values must match `packages/shared/src/enums.ts` exactly.
+  `verify:enums` script enforces this.
+
 ### Shared
 - `packages/shared` (`@discoverylab/shared`) — Zod schemas and
   TypeScript types used by both web and api.
