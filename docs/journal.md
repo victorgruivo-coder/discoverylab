@@ -113,8 +113,6 @@ Surprise / friction:
   offline" + "human runs DB steps." Worth designing acceptance
   criteria around this boundary in future milestones.
 
-Next: Milestone 4 — Fastify API foundation.
-
 Decision (M3 pre-work):
 
 - Prisma 7.10.0 over 6.19.3. Greenfield project, current
@@ -138,3 +136,5 @@ Decision (M3, Docker security):
   Worth doing later; not blocking for a single local Postgres.
 - Prisma does not need Docker access — it connects to Postgres
   over TCP on localhost:5432. Only compose and exec need sudo.
+
+Next: Milestone 4 — Fastify API foundation.

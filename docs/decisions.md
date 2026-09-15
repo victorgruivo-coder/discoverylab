@@ -79,7 +79,7 @@ Last updated: 2026-09-14
 
 ## Stack
 
-## Runtime / build strategy
+### Runtime / build strategy
 
 - Dev: `tsx` as the TypeScript loader for `apps/api` (and any
   workspace package that needs to run directly).
@@ -91,6 +91,7 @@ Last updated: 2026-09-14
   forcing a rebuild in dev kills feedback speed. Split dev/prod.
 
 ### Frontend
+
 - React + TypeScript (strict)
 - Vite
 - Tailwind CSS
@@ -100,6 +101,7 @@ Last updated: 2026-09-14
 - React Router
 
 ### Backend
+
 - Node.js 22 LTS + TypeScript (strict)
 - Fastify
 - Zod for request/response validation
@@ -109,11 +111,12 @@ Last updated: 2026-09-14
 - @fastify/rate-limit for auth endpoints
 
 ### Database
+
 - PostgreSQL
 - Local dev: Docker Compose
 - Prod: managed Postgres (Neon or Supabase)
 
-## Database tooling
+### Database tooling
 
 - Prisma 7.10.0 (current stable major).
 - Datasource URL lives in `apps/api/prisma.config.ts`, not
@@ -128,6 +131,7 @@ Last updated: 2026-09-14
   `verify:enums` script enforces this.
 
 ### Shared
+
 - `packages/shared` (`@discoverylab/shared`) — Zod schemas and
   TypeScript types used by both web and api.
 - Package scope: `@discoverylab/*`
