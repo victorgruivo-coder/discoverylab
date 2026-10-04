@@ -163,7 +163,7 @@ Prod build:
 - API: `tsc` to `dist/`, run `node dist/index.js`.
 - Web: `vite build` to `dist/`, served by Vercel.
 - `packages/shared`: built to `dist/` so the API can import it
-  at runtime. Lands in M5, not M4.
+  at runtime. Lands in M12.
 - Migrations: `prisma migrate deploy` on Render's deploy hook.
 
 What M4 must respect:

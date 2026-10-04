@@ -179,7 +179,7 @@ Surprise / friction:
 ## Milestone 5 — Auth backend
 
 Date: 2026-10-04
-Time: ~Xh
+Time: ~30h
 
 Built:
 
@@ -229,8 +229,8 @@ Next: Milestone 6 — Discoveries backend.
 
 ## Milestone 6 — Discoveries backend
 
-Date: 2026-10-XX
-Time: ~Xh
+Date: 2026-10-04
+Time: 30Xh
 
 Built:
 
