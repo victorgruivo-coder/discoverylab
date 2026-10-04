@@ -1,22 +1,26 @@
-import { computeRiceScore, discoveryCreateInput } from '@discoverylab/shared';
+import { config } from './config.js';
+import { disconnect } from './db.js';
+import { buildServer } from './server.js';
 
-/**
- * Temporary Milestone 2 probe: proves that schemas and pure helpers resolve and
- * typecheck across the workspace. Replace with the Fastify bootstrap in M4.
- */
-export function probeSharedPackage() {
-  const input = discoveryCreateInput.parse({
-    name: 'Checkout drop-off',
-    startDate: '2026-09-01',
-  });
+const app = await buildServer();
 
-  const score = computeRiceScore({
-    opportunityName: 'One-tap checkout',
-    reach: 1200,
-    impact: 3,
-    confidence: 0.8,
-    effort: 4,
-  });
+await app.listen({ port: config.PORT, host: '0.0.0.0' });
 
-  return { input, score };
+app.log.info(`API listening on http://localhost:${config.PORT}`);
+
+async function shutdown(signal: NodeJS.Signals): Promise<void> {
+  app.log.info(`${signal} received, shutting down`);
+
+  await app.close();
+  await disconnect();
+
+  process.exit(0);
 }
+
+process.on('SIGINT', () => {
+  void shutdown('SIGINT');
+});
+
+process.on('SIGTERM', () => {
+  void shutdown('SIGTERM');
+});

@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -14,9 +16,15 @@
   },
   "dependencies": {
     "@discoverylab/shared": "workspace:*",
-    "@prisma/client": "7.10.0"
+    "@fastify/cors": "11.3.0",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "fastify": "5.12.5",
+    "pg": "^8.23.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "pino-pretty": "13.1.3",
     "prisma": "7.10.0",
     "tsx": "4.23.13"
   }

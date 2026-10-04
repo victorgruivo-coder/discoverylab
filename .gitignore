@@ -8,7 +8,7 @@ coverage/
 
 # Prisma 7 generates the client here (output is mandatory with the
 # `prisma-client` generator); regenerate with `pnpm db:generate`.
-apps/api/generated/
+apps/api/src/generated/
 
 # Environment
 .env
@@ -17,3 +17,6 @@ apps/api/generated/
 
 # Editor / OS
 .DS_Store
+
+# Reasonix session scratch (task snapshots from background jobs)
+.reasonix/

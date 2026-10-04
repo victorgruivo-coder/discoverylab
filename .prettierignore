@@ -5,6 +5,7 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
-apps/api/generated/
+apps/api/src/generated/
+.reasonix/
 docs/decisions.md
 .vscode/settings.json
