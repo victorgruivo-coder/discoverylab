@@ -130,6 +130,48 @@ Last updated: 2026-09-14
 - Enum values must match `packages/shared/src/enums.ts` exactly.
   `verify:enums` script enforces this.
 
+### Deployment plan
+
+Targets (locked early to avoid retrofit):
+
+- **Web:** Vercel — Vite static build served from `dist/`.
+- **API:** Render — Node web service running `node dist/index.js`.
+- **DB:** Neon — managed Postgres 16.
+
+Production environment variables for the API:
+
+- `NODE_ENV=production`
+- `PORT` — provided by Render.
+- `DATABASE_URL` — Neon connection string. Requires
+  `?sslmode=require`.
+- `WEB_ORIGIN` — the Vercel URL, e.g.
+  `https://discoverylab.vercel.app`.
+- `LOG_LEVEL=info`
+
+Cookie behavior (affects M5):
+
+- Development: `SameSite=Lax`, `Secure=false` (localhost HTTP).
+- Production: `SameSite=None`, `Secure=true` (cross-site API/web).
+- Driven by `NODE_ENV`, not a separate env var.
+
+Prod build:
+
+- API: `tsc` to `dist/`, run `node dist/index.js`.
+- Web: `vite build` to `dist/`, served by Vercel.
+- `packages/shared`: built to `dist/` so the API can import it
+  at runtime. Lands in M5, not M4.
+- Migrations: `prisma migrate deploy` on Render's deploy hook.
+
+What M4 must respect:
+
+- Config module reads `NODE_ENV` and behaves differently per
+  environment.
+- CORS allows credentials and uses `WEB_ORIGIN` exactly.
+- No HTTPS handling in code — Render and Vercel terminate TLS.
+- No custom domain in v1. If we later move web to
+  `app.discoverylab.com` and API to `api.discoverylab.com`, we
+  can switch cookies back to `SameSite=Lax`. Deferred to v2.
+
 ### Shared
 
 - `packages/shared` (`@discoverylab/shared`) — Zod schemas and
