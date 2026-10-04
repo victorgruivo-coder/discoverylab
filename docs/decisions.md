@@ -85,8 +85,10 @@ Last updated: 2026-10-04
   workspace package that needs to run directly).
 - Prod: `tsc` builds `apps/api` and `packages/shared` to `dist/`;
   Node runs compiled JS.
-- `packages/shared` will get a real build step in M4 or M5 so that
-  Node can resolve `.js` from `.ts` sources at runtime.
+- `packages/shared` build step deferred to M12. Dev uses `tsx`,
+  which resolves `.ts` sources directly. Prod build is only needed
+  at deploy time. Keeping build-system work out of feature
+  milestones (M5-M8) avoids mixing concerns.
 - Rationale: typecheck-only isn't enough for a real server. But
   forcing a rebuild in dev kills feedback speed. Split dev/prod.
 
