@@ -3,7 +3,7 @@
 This file is the contract. Every AI coding session reads it first.
 When a decision changes, update this file, not the conversation.
 
-Last updated: 2026-09-14
+Last updated: 2026-10-04
 
 ---
 
