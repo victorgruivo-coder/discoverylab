@@ -121,7 +121,9 @@ Last updated: 2026-09-14
 - Prisma 7.10.0 (current stable major).
 - Datasource URL lives in `apps/api/prisma.config.ts`, not
   `schema.prisma`. Loaded via Node 22's `process.loadEnvFile()`.
-- Generator: `prisma-client`, output: `apps/api/generated/prisma`.
+- Generator: `prisma-client`, output: `apps/api/src/generated/prisma`.
+  Placed under `src/` so `tsc`'s `rootDir: src` produces a clean
+  `dist/index.js` and `node dist/index.js` stays the prod run line.
 - Driver adapter: `@prisma/adapter-pg` + `pg`.
 - `apps/api/generated/` is gitignored.
 - Chosen over Prisma 6.19.3 because the project is greenfield and
@@ -195,6 +197,19 @@ What M4 must respect:
 - API base path: `/api/v1`.
 - Standard error shape:
   `{ error: { code, message, details? } }`
+
+## Infrastructure rules
+
+- The only local database is the Docker Compose Postgres at
+  `localhost:5432` (database `discoverylab`, user `discoverylab`).
+- Do NOT use `prisma dev`. It creates a Prisma-managed database
+  that would shadow the Docker one.
+- Do NOT add a second Postgres container, service, or data dir.
+- If the database is unreachable, STOP and report. Do not
+  invent infrastructure to work around it. The correct fix is
+  `sudo docker compose up -d`.
+- Do NOT modify `docker-compose.yml` without an explicit
+  decision recorded in this file.
 
 ## IDs and DB conventions
 

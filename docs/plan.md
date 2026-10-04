@@ -20,7 +20,7 @@ before the previous one is verified and committed.
 | 1   | Monorepo scaffold   | pnpm workspaces, TS, lint, shared pkg       | 0          | ✅     |
 | 2   | Shared schemas      | Zod schemas + types for everything          | 1          | ✅     |
 | 3   | Database            | Prisma schema, migrations, Docker Postgres  | 2          | ✅     |
-| 4   | API foundation      | Fastify, config, errors, logging, health    | 3          | ⬜     |
+| 4   | API foundation      | Fastify, config, errors, logging, health    | 3          | ✅     |
 | 5   | Auth backend        | Signup, login, logout, sessions, middleware | 4          | ⬜     |
 | 6   | Discoveries backend | CRUD + soft delete + lifecycle              | 5          | ⬜     |
 | 7   | Frameworks backend  | 5 frameworks, entries, RICE calc            | 6          | ⬜     |

@@ -138,3 +138,40 @@ Decision (M3, Docker security):
   over TCP on localhost:5432. Only compose and exec need sudo.
 
 Next: Milestone 4 — Fastify API foundation.
+
+## Milestone 4 — API foundation
+
+Date: 2026-10-XX
+Time: ~Xh
+
+Built:
+
+- Fastify server with config, errors, logging, CORS
+- Prisma client through @prisma/adapter-pg
+- GET /api/v1/health reporting DB connectivity (200/503)
+- setNotFoundHandler returning the contract error shape
+- Graceful shutdown on SIGINT/SIGTERM
+- isProduction / isDevelopment config helpers
+
+Decisions:
+
+- No service/repo layers yet. Only route is /health.
+- Deferred shared build step to M5.
+- Health returns 503 on DB down; server stays up so ops can diagnose.
+- Deploy targets locked early (Vercel + Render + Neon).
+- Moved generated Prisma client to src/generated/prisma so
+  tsconfig rootDir: src keeps dist/index.js as the prod run line.
+
+Surprise / friction:
+
+- Reasonix attempted `prisma dev` as a workaround for a
+  connection-refused error caused by the stopped Docker container.
+  Rejected. Added "Infrastructure rules" to decisions.md.
+- Reasonix sandbox cannot start/stop Docker containers (socket
+  permission denied, no-new-privileges). Split verification:
+  human runs docker, agent runs curl and reads output.
+- Agent caught its own typecheck failure: Prisma generated client
+  landed outside src, breaking rootDir. Chose to move the client
+  into src rather than drop rootDir and accept dist/src/index.js.
+- Agent flagged setNotFoundHandler gap honestly instead of
+  silently shipping Fastify's default 404 shape.
