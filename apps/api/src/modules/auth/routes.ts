@@ -2,7 +2,7 @@ import { type ZodType } from 'zod';
 
 import { loginInput, signupInput, userOutput } from './schemas.js';
 import { getUserById, login, logout, signup } from './service.js';
-import { AppError } from '../../errors.js';
+import { AppError, validationError } from '../../errors.js';
 import {
   SESSION_COOKIE_NAME,
   clearSessionCookie,
@@ -22,12 +22,7 @@ function parseBody<T>(schema: ZodType<T>, body: unknown): T {
   const result = schema.safeParse(body);
 
   if (!result.success) {
-    throw new AppError(
-      'Invalid request',
-      'VALIDATION_ERROR',
-      400,
-      result.error.issues,
-    );
+    throw validationError(result.error.issues);
   }
 
   return result.data;

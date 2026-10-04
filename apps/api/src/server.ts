@@ -6,6 +6,7 @@ import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import { config, isDevelopment, isProduction } from './config.js';
 import { AppError, notFound, type ApiErrorBody } from './errors.js';
 import { authRoutes } from './modules/auth/routes.js';
+import { discoveryRoutes } from './modules/discoveries/routes.js';
 import { registerAuth } from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
 
@@ -146,6 +147,8 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes, { prefix: '/api/v1' });
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
+  // Registered outside the auth plugin: separate modules, separate scopes.
+  await app.register(discoveryRoutes, { prefix: '/api/v1/discoveries' });
 
   return app;
 }

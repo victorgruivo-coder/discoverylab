@@ -226,3 +226,43 @@ Surprise / friction:
   behavior in the next turn.
 
 Next: Milestone 6 — Discoveries backend.
+
+## Milestone 6 — Discoveries backend
+
+Date: 2026-10-XX
+Time: ~Xh
+
+Built:
+
+- POST/GET/GET:id/PATCH/DELETE on /api/v1/discoveries
+- Ownership isolation via createdByUserId scoping in every query
+- Soft delete via deletedAt
+- Offset pagination, status filter, name search, sort
+
+Decisions:
+
+- Foreign rows return 404, not 403. No existence leak.
+- Repo does scoped updates (WHERE id AND createdByUserId) so a
+  foreign write never matches, rather than checking ownership
+  before writing.
+- leadName defaults from request.user.name at the service layer.
+- discoveryParams Zod schema prevents non-UUID :id from reaching
+  Postgres (would 500).
+- PATCH endDate/startDate cross-field check lives in the service
+  layer (needs persisted state, not just the patch payload).
+- Validation error code unified to VALIDATION_ERROR across auth
+  and discoveries. badRequest reserved for business-rule failures.
+
+Surprise / friction:
+
+- The shared discoveryUpdateInput .refine couldn't catch
+  endDate-before-startDate when only endDate was in the payload.
+  A real integrity gap that wouldn't have shown up until a user
+  hit it.
+- Agent flagged the .refine limitation honestly instead of
+  silently shipping it.
+- psql is not installed in the agent's environment; it used pg
+  directly with printed SQL. Same driver, same data, but worth
+  noting for future DB verification.
+
+Next: Milestone 7 — Frameworks backend.

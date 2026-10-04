@@ -5,12 +5,16 @@ before the previous one is verified and committed.
 
 ## Rules
 
-- One milestone per Reasonix session.
+- One milestone per Reasonix session. Start a new session for
+  each milestone. The docs are the handoff — no context carries
+  between sessions except what's in the repo.
 - Feed `docs/decisions.md` to Reasonix at the start of every session.
 - If the agent proposes work outside the milestone scope, stop it.
 - Read every file the agent writes. Ask for explanations when unclear.
 - Commit per milestone, not per file.
 - When something breaks, fix it before moving on.
+- Do NOT use `pkill -f` to stop processes. Resolve the PID with
+  `ss -ltnp` or `lsof -i :PORT` first.
 
 ## Milestones
 
@@ -22,7 +26,7 @@ before the previous one is verified and committed.
 | 3   | Database            | Prisma schema, migrations, Docker Postgres  | 2          | ✅     |
 | 4   | API foundation      | Fastify, config, errors, logging, health    | 3          | ✅     |
 | 5   | Auth backend        | Signup, login, logout, sessions, middleware | 4          | ✅     |
-| 6   | Discoveries backend | CRUD + soft delete + lifecycle              | 5          | ⬜     |
+| 6   | Discoveries backend | CRUD + soft delete + lifecycle              | 5          | ✅     |
 | 7   | Frameworks backend  | 5 frameworks, entries, RICE calc            | 6          | ⬜     |
 | 8   | Export backend      | Markdown generation                         | 7          | ⬜     |
 | 9   | Web scaffold        | Vite, Tailwind, shadcn, router, API client  | 8          | ⬜     |

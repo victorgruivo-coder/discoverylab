@@ -35,6 +35,15 @@ export function badRequest(message: string, details?: unknown): AppError {
   return new AppError(message, 'BAD_REQUEST', 400, details);
 }
 
+/**
+ * Boundary failures (Zod) get their own code, so clients can tell "your payload
+ * is malformed" apart from "your payload parsed fine but the rule rejects it",
+ * which stays on BAD_REQUEST.
+ */
+export function validationError(details: unknown): AppError {
+  return new AppError('Invalid request', 'VALIDATION_ERROR', 400, details);
+}
+
 export function internal(message = 'Internal server error'): AppError {
   return new AppError(message, 'INTERNAL_ERROR', 500);
 }

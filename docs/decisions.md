@@ -203,6 +203,17 @@ What M4 must respect:
   `{ path: (string | number)[], message: string }`.
   Applies to Zod validation now. Unify the AJV branch when
   Fastify route schemas are introduced.
+- Validation errors: two categories with distinct codes.
+  - `VALIDATION_ERROR` (400): payload does not conform to schema.
+    Shape, format, type, single-field rules. Caught by Zod at the
+    route boundary or shared schema refine.
+  - `BAD_REQUEST` (400): payload is well-formed but values
+    conflict with persisted state. Caught in the service layer.
+    Details always carry `{ field }` so clients know which input
+    to highlight.
+  - Example: POST with endDate < startDate → VALIDATION_ERROR
+    (shared refine). PATCH with endDate < stored startDate →
+    BAD_REQUEST (service-layer cross-field check).
 
 ## Infrastructure rules
 
@@ -227,6 +238,11 @@ What M4 must respect:
 - `created_at` and `updated_at` on every table.
 - `deleted_at` (nullable) only on `discoveries`.
 - Prisma enums for: discovery_status, stage, discovery_type, node_type.
+- `@db.Date` columns (startDate, endDate) are handled via
+  `toIsoDate()` (`toISOString().slice(0, 10)`), which is
+  timezone-independent in the API path. Raw `pg` queries may
+  show a local-midnight timestamp; Prisma normalizes to UTC
+  midnight. This is a driver difference, not a data problem.
 
 ## Text input rules
 
