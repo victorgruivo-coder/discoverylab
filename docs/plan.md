@@ -21,7 +21,7 @@ before the previous one is verified and committed.
 | 2   | Shared schemas      | Zod schemas + types for everything          | 1          | ✅     |
 | 3   | Database            | Prisma schema, migrations, Docker Postgres  | 2          | ✅     |
 | 4   | API foundation      | Fastify, config, errors, logging, health    | 3          | ✅     |
-| 5   | Auth backend        | Signup, login, logout, sessions, middleware | 4          | ⬜     |
+| 5   | Auth backend        | Signup, login, logout, sessions, middleware | 4          | ✅     |
 | 6   | Discoveries backend | CRUD + soft delete + lifecycle              | 5          | ⬜     |
 | 7   | Frameworks backend  | 5 frameworks, entries, RICE calc            | 6          | ⬜     |
 | 8   | Export backend      | Markdown generation                         | 7          | ⬜     |

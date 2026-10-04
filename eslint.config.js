@@ -78,6 +78,12 @@ export default tseslint.config(
         },
       ],
       'import-x/no-duplicates': 'error',
+
+      // tsc already rejects imports of names that do not exist, and import-x
+      // cannot see the default export of `export =` CJS typings such as
+      // @fastify/cookie. (Upstream import-x switches off `named` for TS files
+      // for the same reason.)
+      'import-x/default': 'off',
     },
   },
   {

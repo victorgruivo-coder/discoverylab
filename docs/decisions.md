@@ -199,6 +199,10 @@ What M4 must respect:
 - API base path: `/api/v1`.
 - Standard error shape:
   `{ error: { code, message, details? } }`
+- Validation error shape:
+  `{ path: (string | number)[], message: string }`.
+  Applies to Zod validation now. Unify the AJV branch when
+  Fastify route schemas are introduced.
 
 ## Infrastructure rules
 
@@ -212,6 +216,10 @@ What M4 must respect:
   `sudo docker compose up -d`.
 - Do NOT modify `docker-compose.yml` without an explicit
   decision recorded in this file.
+- Do NOT use `pkill -f` or pattern-based process kills. Resolve the
+  target PID with `ss -ltnp` or `lsof -i :PORT` first, then send
+  the signal to that specific PID. Pattern matching has killed
+  unrelated processes on this project already.
 
 ## IDs and DB conventions
 

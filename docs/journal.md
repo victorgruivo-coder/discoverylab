@@ -70,7 +70,7 @@ Surprise / friction:
 
 ## Milestone 3 — Database
 
-Date: 2026-09-XX
+Date: 2026-09-14
 Time: ~2h
 
 Built:
@@ -141,8 +141,8 @@ Next: Milestone 4 — Fastify API foundation.
 
 ## Milestone 4 — API foundation
 
-Date: 2026-10-XX
-Time: ~Xh
+Date: 2026-10-04
+Time: ~1h30m
 
 Built:
 
@@ -175,3 +175,54 @@ Surprise / friction:
   into src rather than drop rootDir and accept dist/src/index.js.
 - Agent flagged setNotFoundHandler gap honestly instead of
   silently shipping Fastify's default 404 shape.
+
+## Milestone 5 — Auth backend
+
+Date: 2026-10-04
+Time: ~Xh
+
+Built:
+
+- Signup, login, logout, /me endpoints
+- Session-based auth with argon2id password hashing
+- Session cookie (HttpOnly, SameSite driven by NODE_ENV)
+- Login rate limiting (10/15min per IP, verified with 11th
+  attempt returning 429)
+- requireAuth middleware, request.user decorated
+- Sliding window session refresh (<6 days remaining)
+- Token model: 32 random bytes base64url in cookie, SHA-256
+  hash in DB
+
+Decisions:
+
+- Generic 401 for login failure — no email enumeration.
+  Bodies verified byte-identical with diff.
+- passwordHash never returned. Grepped all responses: 0 matches.
+- Rate limiter keyed on req.ip, per-route (global: false).
+- trustProxy: isProduction (constructor option, not instance).
+- registerAuth called directly, not via app.register(), so
+  decorators are visible to sibling route plugins.
+- Validation details: { path: (string | number)[], message }.
+  Arrays, not dotted strings. AJV unification noted for later.
+- Known v1 limitations documented in code: login timing
+  side-channel, cookie Max-Age vs DB slide. Both deferred to v2.
+
+Surprise / friction:
+
+- Found and fixed a real bug during M5 verification: the 11th
+  login returned 500 instead of 429. @fastify/rate-limit throws
+  the errorResponseBuilder's return value, and the M4 error
+  handler flattened non-AppError to 500. Fix: the builder now
+  returns AppError('Too many requests', 'RATE_LIMITED', 429).
+- Duplicate signup race: P2002 surfaced as 500. Fixed with a
+  try/catch that rethrows as 409 EMAIL_TAKEN. Verified with 8
+  parallel signups: 1 success, 7 conflicts, 0 errors.
+- Zod v4 leaked email regex patterns in validation details.
+  Mapped to { path, message } to remove the leak.
+- Reasonix killed my dev server with `pkill -f "src/index.ts"`,
+  matching on a command-line pattern instead of resolving the
+  PID from the listening socket. Added an Infrastructure rule
+  against `pkill -f`. Agent owned the mistake and corrected
+  behavior in the next turn.
+
+Next: Milestone 6 — Discoveries backend.
