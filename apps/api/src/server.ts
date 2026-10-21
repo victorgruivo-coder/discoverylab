@@ -7,6 +7,7 @@ import { config, isDevelopment, isProduction } from './config.js';
 import { AppError, notFound, type ApiErrorBody } from './errors.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { discoveryRoutes } from './modules/discoveries/routes.js';
+import { frameworkRoutes } from './modules/frameworks/routes.js';
 import { registerAuth } from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
 
@@ -149,6 +150,10 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   // Registered outside the auth plugin: separate modules, separate scopes.
   await app.register(discoveryRoutes, { prefix: '/api/v1/discoveries' });
+  // The prefix carries `:id`, so the plugin only declares `/` and `/:key`.
+  await app.register(frameworkRoutes, {
+    prefix: '/api/v1/discoveries/:id/frameworks',
+  });
 
   return app;
 }
