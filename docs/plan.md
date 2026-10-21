@@ -30,7 +30,7 @@ before the previous one is verified and committed.
 | 7   | Frameworks backend  | 5 frameworks, entries, RICE calc            | 6          | ✅     |
 | 8   | Export backend      | Markdown generation                         | 7          | ✅     |
 | 9   | Web scaffold        | Vite, Tailwind, shadcn, router, API client  | 8          | ✅     |
-| 10  | Auth UI + Dashboard | Login, signup, list/create/delete           | 9          | ⬜     |
+| 10  | Auth UI + Dashboard | Login, signup, list/create/delete           | 9          | ✅     |
 | 11  | Wizard workspace    | Stage nav, framework forms, autosave        | 10         | ⬜     |
 | 12  | Polish + Deploy     | E2E, error states, deploy, README           | 11         | ⬜     |
 

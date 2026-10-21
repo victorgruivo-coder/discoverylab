@@ -2,14 +2,19 @@ import {
   Compass,
   FlaskConical,
   LayoutDashboard,
+  Loader2,
   LogOut,
   Settings,
   type LucideIcon,
 } from 'lucide-react';
-import { Link, NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/features/auth/AuthContext';
+import { getApiErrorMessage } from '@/lib/api-client';
+import { getInitials } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 type NavItem = {
@@ -26,6 +31,27 @@ const navItems: ReadonlyArray<NavItem> = [
 ];
 
 export function Sidebar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+
+  const handleLogout = async (): Promise<void> => {
+    setIsLoggingOut(true);
+    setLogoutError(null);
+
+    try {
+      await logout();
+      await navigate('/login', { replace: true });
+    } catch (error) {
+      setLogoutError(
+        getApiErrorMessage(error, 'Unable to log out. Please try again.'),
+      );
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <aside className="sticky top-0 flex h-screen w-[250px] shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="flex h-16 items-center border-b border-slate-100 px-4">
@@ -70,15 +96,17 @@ export function Sidebar() {
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <Avatar className="size-8">
             <AvatarFallback className="bg-slate-900 text-xs font-medium text-white">
-              AM
+              {user ? getInitials(user.name) : '?'}
             </AvatarFallback>
           </Avatar>
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-slate-900">
-              Alex Morgan
+              {user?.name ?? 'Signed in user'}
             </p>
-            <p className="truncate text-xs text-slate-500">Product Manager</p>
+            <p className="truncate text-xs text-slate-500">
+              {user?.email ?? ''}
+            </p>
           </div>
 
           <Button
@@ -87,10 +115,24 @@ export function Sidebar() {
             size="icon-sm"
             aria-label="Log out"
             title="Log out"
+            disabled={isLoggingOut}
+            onClick={() => {
+              void handleLogout();
+            }}
           >
-            <LogOut className="size-4" aria-hidden="true" />
+            {isLoggingOut ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <LogOut className="size-4" aria-hidden="true" />
+            )}
           </Button>
         </div>
+
+        {logoutError === null ? null : (
+          <p role="alert" className="px-2 pt-1 text-xs text-red-600">
+            {logoutError}
+          </p>
+        )}
       </div>
     </aside>
   );

@@ -48,6 +48,14 @@ export class ApiError extends Error {
   }
 }
 
+/** Best-effort user-facing message for errors thrown by the API client. */
+export function getApiErrorMessage(
+  error: unknown,
+  fallback = 'Something went wrong. Please try again.',
+): string {
+  return error instanceof ApiError ? error.message : fallback;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

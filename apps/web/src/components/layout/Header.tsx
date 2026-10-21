@@ -1,13 +1,9 @@
-import { Plus } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-
-import { Button } from '@/components/ui/button';
 
 const pageTitles: Record<string, string> = {
   '/': 'Dashboard',
   '/discoveries': 'Discoveries',
   '/settings': 'Settings',
-  '/login': 'Login',
 };
 
 export function Header() {
@@ -19,13 +15,6 @@ export function Header() {
       <h1 className="text-base font-semibold tracking-tight text-slate-900">
         {title}
       </h1>
-
-      <div className="flex items-center gap-2">
-        <Button type="button" variant="outline" size="sm" disabled>
-          <Plus className="size-3.5" aria-hidden="true" />
-          New discovery
-        </Button>
-      </div>
     </header>
   );
 }
