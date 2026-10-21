@@ -266,3 +266,40 @@ Surprise / friction:
   noting for future DB verification.
 
 Next: Milestone 7 — Frameworks backend.
+
+## Milestone 7 — Frameworks backend
+
+Date: 2026-10-21
+Time: ~Xh
+
+Built:
+
+- GET / and GET /:key to list and read framework instances
+- PUT /:key to upsert framework content (JSONB)
+- 5 framework keys wired to their shared Zod schemas
+- Server-side RICE score calculation via computeRiceScore
+- Ownership checks reuse the discoveries service (404, never 403)
+
+Decisions:
+
+- Upsert pattern: PUT is idempotent. Relies on Prisma's unique
+  constraint [discoveryId, frameworkKey]. No separate create/update routes.
+- RICE scores are calculated on the server and saved in the JSONB
+  payload. Frontend doesn't have to calculate them, and the DB is
+  always correct if the formula changes.
+- Missing framework returns 404 NOT_FOUND, not an empty 200. This
+  distinguishes "unfilled" from "error" cleanly.
+- Framework key validation (enum) happens at the Zod boundary,
+  preventing bad keys from reaching the DB.
+
+Surprise / friction:
+
+- DeepSeek Harness (new tool) asked for danger-full-access to run
+  Docker. Rejected. Reinforced the Infrastructure Rules: human runs
+  Docker, agent runs curl and tests.
+- Agent successfully navigated Fastify nested routes
+  (/discoveries/:id/frameworks/:key) without leaks.
+- Test data (Alice/Bob + discovery) left in DB intentionally for M8
+  export testing.
+
+Next: Milestone 8 — Export backend.
