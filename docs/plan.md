@@ -28,7 +28,7 @@ before the previous one is verified and committed.
 | 5   | Auth backend        | Signup, login, logout, sessions, middleware | 4          | ✅     |
 | 6   | Discoveries backend | CRUD + soft delete + lifecycle              | 5          | ✅     |
 | 7   | Frameworks backend  | 5 frameworks, entries, RICE calc            | 6          | ✅     |
-| 8   | Export backend      | Markdown generation                         | 7          | ⬜     |
+| 8   | Export backend      | Markdown generation                         | 7          | ✅     |
 | 9   | Web scaffold        | Vite, Tailwind, shadcn, router, API client  | 8          | ⬜     |
 | 10  | Auth UI + Dashboard | Login, signup, list/create/delete           | 9          | ⬜     |
 | 11  | Wizard workspace    | Stage nav, framework forms, autosave        | 10         | ⬜     |

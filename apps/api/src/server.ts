@@ -7,6 +7,7 @@ import { config, isDevelopment, isProduction } from './config.js';
 import { AppError, notFound, type ApiErrorBody } from './errors.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { discoveryRoutes } from './modules/discoveries/routes.js';
+import { exportRoutes } from './modules/export/routes.js';
 import { frameworkRoutes } from './modules/frameworks/routes.js';
 import { registerAuth } from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
@@ -153,6 +154,11 @@ export async function buildServer(): Promise<FastifyInstance> {
   // The prefix carries `:id`, so the plugin only declares `/` and `/:key`.
   await app.register(frameworkRoutes, {
     prefix: '/api/v1/discoveries/:id/frameworks',
+  });
+  // Read-only projection of the discovery and its framework instances. The
+  // `:id` prefix means this module only declares GET `/`.
+  await app.register(exportRoutes, {
+    prefix: '/api/v1/discoveries/:id/export',
   });
 
   return app;

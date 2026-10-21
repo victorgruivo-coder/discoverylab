@@ -179,7 +179,7 @@ Surprise / friction:
 ## Milestone 5 — Auth backend
 
 Date: 2026-10-04
-Time: ~30h
+Time: ~30m
 
 Built:
 
@@ -230,7 +230,7 @@ Next: Milestone 6 — Discoveries backend.
 ## Milestone 6 — Discoveries backend
 
 Date: 2026-10-04
-Time: 30Xh
+Time: ~30m
 
 Built:
 
@@ -270,7 +270,7 @@ Next: Milestone 7 — Frameworks backend.
 ## Milestone 7 — Frameworks backend
 
 Date: 2026-10-21
-Time: ~Xh
+Time: ~30m
 
 Built:
 
@@ -303,3 +303,30 @@ Surprise / friction:
   export testing.
 
 Next: Milestone 8 — Export backend.
+
+## Milestone 8 — Export backend
+
+Date: 2026-10-21
+Time: ~20m
+
+Built:
+- GET /discoveries/:id/export returning { markdown: string }
+- Pure string-concatenation formatter (no external deps)
+- Markdown generation for all 5 frameworks
+- Graceful omission of empty frameworks
+
+Decisions:
+- Formatter is a pure function: takes data, returns string. No DB access, 
+  no HTTP context. Highly testable.
+- Server-side generation ensures the output is always consistent with the 
+  database, regardless of what the frontend does.
+- Returning JSON ({ markdown }) instead of text/markdown allows the frontend 
+  to render a preview modal before the user clicks "Download".
+- No external Markdown parser libraries. String templates are deterministic, 
+  zero-dependency, and sufficient for this data shape.
+
+Surprise / friction:
+- None. The agent nailed the formatting on the first try. The M7 test data 
+  provided a perfect dataset for verification.
+
+Next: Milestone 9 — Web scaffold.
