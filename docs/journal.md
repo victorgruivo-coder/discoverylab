@@ -310,23 +310,64 @@ Date: 2026-10-21
 Time: ~20m
 
 Built:
+
 - GET /discoveries/:id/export returning { markdown: string }
 - Pure string-concatenation formatter (no external deps)
 - Markdown generation for all 5 frameworks
 - Graceful omission of empty frameworks
 
 Decisions:
-- Formatter is a pure function: takes data, returns string. No DB access, 
+
+- Formatter is a pure function: takes data, returns string. No DB access,
   no HTTP context. Highly testable.
-- Server-side generation ensures the output is always consistent with the 
+- Server-side generation ensures the output is always consistent with the
   database, regardless of what the frontend does.
-- Returning JSON ({ markdown }) instead of text/markdown allows the frontend 
+- Returning JSON ({ markdown }) instead of text/markdown allows the frontend
   to render a preview modal before the user clicks "Download".
-- No external Markdown parser libraries. String templates are deterministic, 
+- No external Markdown parser libraries. String templates are deterministic,
   zero-dependency, and sufficient for this data shape.
 
 Surprise / friction:
-- None. The agent nailed the formatting on the first try. The M7 test data 
+
+- None. The agent nailed the formatting on the first try. The M7 test data
   provided a perfect dataset for verification.
 
 Next: Milestone 9 — Web scaffold.
+
+## Milestone 9 — Web scaffold
+
+Date: 2026-10-21
+Time: ~1h
+
+Built:
+
+- Vite + React + TypeScript (strict), Tailwind v4, shadcn/ui, and
+  TanStack Query in `apps/web`.
+- App shell: 250px white sidebar, sticky header, slate-50 content area.
+- React Router routes with Dashboard, Discoveries, Settings, and Login
+  placeholders.
+- Typed `api-client` with `credentials: 'include'` and parsing for the
+  standard `{ error: { code, message, details } }` shape.
+
+Decisions:
+
+- Feature-first page folders (`features/auth`, `features/dashboard`, ...)
+  match the frontend convention from `decisions.md`.
+- Tailwind v4 through `@tailwindcss/vite`; theme tokens live in
+  `src/index.css`, so there is no JS Tailwind config.
+- Kept the shadcn CLI-generated Button and Avatar, but replaced the
+  generated `cn` package with the project's clsx + tailwind-merge helper.
+- Login still renders inside the shell in M9. M10 can move it to a public
+  layout when auth actually exists.
+
+Surprise / friction:
+
+- shadcn 4.22's `radix-nova` preset installed the unified `radix-ui`
+  package plus a separate `cn` package. Pruned the unused packages and
+  wired `cn` manually.
+- The import-x resolver needed `.tsx` in its extension list before it
+  would resolve the `@/*` alias for aliased `.tsx` files.
+- Headless Firefox screenshots can race Vite's CSS injection; a fresh
+  profile and a second capture showed the final shell correctly.
+
+Next: Milestone 10 — Auth UI + Dashboard.

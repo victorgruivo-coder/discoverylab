@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import eslint from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import {
@@ -7,6 +9,16 @@ import {
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+const nodeResolutionOptions = {
+  extensions: ['.js', '.mjs', '.cjs', '.ts', '.tsx', '.mts', '.cts', '.json'],
+  // NodeNext requires `./x.js` specifiers that map to `x.ts` sources.
+  extensionAlias: {
+    '.js': ['.ts', '.js'],
+    '.mjs': ['.mts', '.mjs'],
+    '.cjs': ['.cts', '.cjs'],
+  },
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -15,6 +27,8 @@ export default tseslint.config(
       '**/coverage/**',
       // Prisma 7 generates the client into a real directory; it is not ours to lint.
       '**/generated/**',
+      // Session scratch (local CLI caches, background-job snapshots).
+      '.reasonix/**',
     ],
   },
   eslint.configs.recommended,
@@ -31,17 +45,7 @@ export default tseslint.config(
       },
     },
     settings: {
-      'import-x/resolver-next': [
-        createNodeResolver({
-          extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts', '.json'],
-          // NodeNext requires `./x.js` specifiers that map to `x.ts` sources.
-          extensionAlias: {
-            '.js': ['.ts', '.js'],
-            '.mjs': ['.mts', '.mjs'],
-            '.cjs': ['.cts', '.cjs'],
-          },
-        }),
-      ],
+      'import-x/resolver-next': [createNodeResolver(nodeResolutionOptions)],
     },
     rules: {
       // Contracts from docs/decisions.md: no `any`, and no floating promises.
@@ -71,6 +75,11 @@ export default tseslint.config(
               group: 'internal',
               position: 'before',
             },
+            {
+              pattern: '@/**',
+              group: 'internal',
+              position: 'after',
+            },
           ],
           pathGroupsExcludedImportTypes: ['builtin'],
           'newlines-between': 'always',
@@ -84,6 +93,30 @@ export default tseslint.config(
       // @fastify/cookie. (Upstream import-x switches off `named` for TS files
       // for the same reason.)
       'import-x/default': 'off',
+    },
+  },
+  {
+    // The web app runs in the browser; its tsconfig already supplies the DOM
+    // types, but ESLint's no-undef rule needs the matching globals. Its own
+    // tsconfig also teaches the resolver the `@/*` alias.
+    files: ['apps/web/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+    settings: {
+      'import-x/resolver-next': [
+        createNodeResolver({
+          ...nodeResolutionOptions,
+          tsconfig: {
+            configFile: path.resolve(
+              import.meta.dirname,
+              'apps/web/tsconfig.json',
+            ),
+          },
+        }),
+      ],
     },
   },
   {
