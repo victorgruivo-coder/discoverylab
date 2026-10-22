@@ -125,7 +125,6 @@ export function ProblemStatementFields({
                     aria-required={config.required ? true : undefined}
                     aria-invalid={fieldState.invalid ? true : undefined}
                     aria-describedby={fieldState.error ? errorId : helperId}
-                    className="min-h-24 resize-y"
                   />
 
                   {fieldState.error?.message ? (

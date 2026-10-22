@@ -3,7 +3,7 @@
 This file is the contract. Every AI coding session reads it first.
 When a decision changes, update this file, not the conversation.
 
-Last updated: 2026-10-04
+Last updated: 2026-10-21
 
 ---
 
@@ -246,8 +246,10 @@ What M4 must respect:
 
 ## Text input rules
 
-- Qualitative fields: auto-growing textarea, no hard character cap,
-  placeholder shows an example, helper text explains what good looks like.
+- Qualitative fields: fixed-height textarea with internal scrolling
+  (auto-growing `field-sizing-content` caused scroll jank), no hard
+  character cap, placeholder shows an example, helper text explains
+  what good looks like.
 - Structured fields: Zod-validated, hard limits, inline errors.
 - Autosave: on blur + 2s debounce + on stage change.
 - v1: plain textareas only. No rich text. No markdown in inputs.

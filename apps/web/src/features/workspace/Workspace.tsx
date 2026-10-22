@@ -6,17 +6,22 @@ import { Button } from '@/components/ui/button';
 import { getApiErrorMessage } from '@/lib/api-client';
 
 import { fetchDiscovery, workspaceKeys } from './api';
+import { DecisionLogForm } from './DecisionLogForm';
+import { DeleteDiscoveryDialog } from './DeleteDiscoveryDialog';
+import { DiscoveryStatusSelect } from './DiscoveryStatusSelect';
+import { JtbdForm } from './JtbdForm';
+import { OstForm } from './OstForm';
 import { ProblemStatementForm } from './ProblemStatementForm';
+import { RiceForm } from './RiceForm';
 import { StageNav } from './StageNav';
-import { getActiveStage, getStage } from './stages';
+import { getActiveStage } from './stages';
 
-import type { Stage } from './stages';
+import type { StageKey } from './stages';
 
 export function Workspace() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const activeStage = getActiveStage(searchParams);
-  const stage = getStage(activeStage);
   const discoveryId = id ?? '';
 
   const discoveryQuery = useQuery({
@@ -52,18 +57,33 @@ export function Workspace() {
           )}
         </div>
 
-        <Button asChild variant="outline">
-          <Link to="/">
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back to Dashboard
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-start justify-end gap-2">
+          {discovery ? (
+            <>
+              <DiscoveryStatusSelect
+                discoveryId={discovery.id}
+                status={discovery.status}
+              />
+              <DeleteDiscoveryDialog
+                discoveryId={discovery.id}
+                discoveryName={discovery.name}
+              />
+            </>
+          ) : null}
+
+          <Button asChild variant="outline">
+            <Link to="/">
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Back to Dashboard
+            </Link>
+          </Button>
+        </div>
       </header>
 
-      <div className="mt-6 grid min-h-0 flex-1 gap-6 overflow-y-auto lg:grid-cols-[200px_minmax(0,1fr)] lg:overflow-hidden">
+      <div className="mt-6 grid min-h-0 flex-1 gap-6 overflow-y-auto overscroll-contain lg:grid-cols-[200px_minmax(0,1fr)] lg:overflow-hidden">
         <StageNav />
 
-        <div className="min-w-0 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
+        <div className="min-w-0 overscroll-contain lg:min-h-0 lg:overflow-y-auto lg:pr-1">
           {discoveryQuery.isPending ? <WorkspaceSkeleton /> : null}
 
           {discoveryQuery.isError ? (
@@ -98,11 +118,7 @@ export function Workspace() {
           ) : null}
 
           {discoveryQuery.isSuccess ? (
-            activeStage === 'problem-statement' ? (
-              <ProblemStatementForm discoveryId={discoveryId} />
-            ) : (
-              <ComingSoon stage={stage} />
-            )
+            <StageForm stage={activeStage} discoveryId={discoveryId} />
           ) : null}
         </div>
       </div>
@@ -110,18 +126,25 @@ export function Workspace() {
   );
 }
 
-function ComingSoon({ stage }: { stage: Stage }) {
-  return (
-    <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 px-6 py-12 text-center">
-      <p className="text-lg font-semibold tracking-tight text-slate-900">
-        Coming soon
-      </p>
-      <p className="mt-1 text-sm text-slate-500">
-        {stage.formName} is part of {stage.label}, but its form has not been
-        built yet.
-      </p>
-    </div>
-  );
+function StageForm({
+  stage,
+  discoveryId,
+}: {
+  stage: StageKey;
+  discoveryId: string;
+}) {
+  switch (stage) {
+    case 'problem-statement':
+      return <ProblemStatementForm discoveryId={discoveryId} />;
+    case 'jtbd':
+      return <JtbdForm discoveryId={discoveryId} />;
+    case 'ost':
+      return <OstForm discoveryId={discoveryId} />;
+    case 'rice':
+      return <RiceForm discoveryId={discoveryId} />;
+    case 'decision-log':
+      return <DecisionLogForm discoveryId={discoveryId} />;
+  }
 }
 
 function WorkspaceSkeleton() {
