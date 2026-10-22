@@ -371,3 +371,42 @@ Surprise / friction:
   profile and a second capture showed the final shell correctly.
 
 Next: Milestone 10 — Auth UI + Dashboard.
+
+## Milestone 10 — Auth UI + Dashboard
+
+Date: 2026-10-21
+Time: ~25m
+
+Built:
+
+- AuthContext with TanStack Query for /auth/me
+- ProtectedRoute and PublicLayout for auth pages
+- Login and Signup forms (React Hook Form + Zod)
+- Dashboard fetching discoveries with TanStack Query
+- DiscoveryCard grid with Empty State
+- CreateDiscoveryModal with cache invalidation
+
+Decisions:
+
+- Use React Hook Form's Controller to isolate re-renders and fix typing lag.
+- Use a custom `safeExtend` Zod schema for the modal so empty strings for
+  leadName validate as undefined, allowing the backend to fall back to the
+  logged-in user's name.
+- Conditional rendering (`{isOpen && <Modal />}`) for the modal to physically
+  unmount it from the DOM, preventing state/memory leaks.
+- Removed all zoom/slide/backdrop-blur CSS animations from the Dialog to fix
+  severe GPU stutter on Linux.
+
+Surprise / friction:
+
+- The AI agent generated a highly functional form modal that looked perfect in code,
+  but had three critical real-world bugs that only surfaced during manual QA:
+  1. Memory/State leak: The modal hid with CSS instead of unmounting, so the form
+     remembered the previous submission.
+  2. Input locking: The "Lead Name" field was pre-filled but couldn't be erased
+     because React Hook Form snapped back to the default when the value was undefined.
+  3. Performance lag: shadcn's default animations caused GPU stutter.
+- Lesson: AI is great at wiring logic (API endpoints, DB schemas), but human QA
+  is mandatory for UX. AI doesn't feel the lag or the frustration of a frozen input.
+
+Next: Milestone 11 — Wizard workspace (Part 1).

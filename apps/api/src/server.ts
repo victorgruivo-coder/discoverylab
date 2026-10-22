@@ -81,6 +81,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: config.WEB_ORIGIN,
     credentials: true,
+    // The web client reads (GET), creates (POST), saves frameworks (PUT),
+    // edits (PATCH), and deletes (DELETE) through this API.
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
   });
 
   await app.register(cookie);

@@ -6,9 +6,10 @@ import { Login } from '@/features/auth/Login';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { PublicLayout } from '@/features/auth/PublicLayout';
 import { Signup } from '@/features/auth/Signup';
-import { Dashboard } from '@/features/discoveries/Dashboard';
+import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { DiscoveriesPage } from '@/features/discoveries/DiscoveriesPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
+import { Workspace } from '@/features/workspace/Workspace';
 
 export function App() {
   return (
@@ -26,8 +27,9 @@ export function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Dashboard />} />
+          <Route index element={<DashboardPage />} />
           <Route path="discoveries" element={<DiscoveriesPage />} />
+          <Route path="discoveries/:id" element={<Workspace />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
