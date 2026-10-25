@@ -1,4 +1,5 @@
-const DEFAULT_API_URL = 'http://localhost:3000/api/v1';
+/** Relative by default: dev uses the Vite proxy, prod uses Nginx. */
+const DEFAULT_API_URL = '/api/v1';
 
 /** The standard error body every API endpoint returns (docs/decisions.md). */
 export type ApiErrorPayload = {
@@ -10,7 +11,7 @@ export type ApiErrorPayload = {
 };
 
 /**
- * Base URL for the API. Override it with `VITE_API_URL` in `.env.local`.
+ * Base URL for the API. Override it with `VITE_API_URL` in `.env`/`.env.local`.
  * The trailing slash is stripped so paths can be written with a leading slash.
  */
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();

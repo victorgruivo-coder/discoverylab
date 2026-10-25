@@ -78,8 +78,11 @@ export async function buildServer(): Promise<FastifyInstance> {
         },
   });
 
+  // Development may be opened through localhost, a LAN IP, or a tunnel, so
+  // reflect whatever origin the browser sends (credentials stay allowed). The
+  // Vite proxy is the normal path; production keeps exactly one origin.
   await app.register(cors, {
-    origin: config.WEB_ORIGIN,
+    origin: isDevelopment ? true : config.WEB_ORIGIN,
     credentials: true,
     // The web client reads (GET), creates (POST), saves frameworks (PUT),
     // edits (PATCH), and deletes (DELETE) through this API.

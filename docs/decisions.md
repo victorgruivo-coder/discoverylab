@@ -75,7 +75,9 @@ Last updated: 2026-10-24
 - **Email verification:** deferred to v2.
 - **Forgot password:** deferred to v2.
 - **Rate limiting:** 10 login attempts / 15 min per IP.
-- **CORS:** allow only the web origin, credentials: true.
+- **CORS:** credentials: true. Production allows only `WEB_ORIGIN`;
+  development reflects any origin because the Vite proxy is the normal
+  path and LAN/tunnel access must keep working.
 
 ## Stack
 
@@ -151,6 +153,11 @@ Nginx routes `/api` to the API and everything else to the static
 web build, so the browser and API share one origin. There is no
 separate web origin in production.
 
+Local development: the web app calls the relative path `/api/v1`,
+and Vite proxies `/api` to the API on `localhost:3000`. Dev uses a
+Vite proxy to avoid CORS. Prod uses Nginx for the same purpose
+(single origin).
+
 Production environment variables for the API:
 
 - `NODE_ENV=production`
@@ -181,7 +188,8 @@ What M4 must respect:
 
 - Config module reads `NODE_ENV` and behaves differently per
   environment.
-- CORS allows credentials and uses `WEB_ORIGIN` exactly.
+- CORS allows credentials. Production uses `WEB_ORIGIN` exactly;
+  development reflects any origin for LAN/tunnel access.
 - No HTTPS handling in code — Nginx terminates TLS.
 - v1 uses one public origin. Splitting web and API onto separate
   subdomains would require revisiting the cookie policy; deferred
