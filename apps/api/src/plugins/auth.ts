@@ -1,4 +1,4 @@
-import { isProduction } from '../config.js';
+import { sessionCookieFlags } from '../config.js';
 import { AppError } from '../errors.js';
 import { resolveSession } from '../modules/auth/service.js';
 
@@ -30,8 +30,8 @@ export function setSessionCookie(reply: FastifyReply, token: string): void {
     httpOnly: true,
     path: '/',
     maxAge: SESSION_MAX_AGE_SECONDS,
-    sameSite: isProduction ? 'none' : 'lax',
-    secure: isProduction,
+    sameSite: sessionCookieFlags.sameSite,
+    secure: sessionCookieFlags.secure,
   });
 }
 

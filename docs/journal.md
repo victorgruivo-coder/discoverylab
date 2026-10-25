@@ -417,6 +417,7 @@ Date: 2026-10-22
 Time: ~Xh
 
 Built:
+
 - 2-column Workspace layout with fixed sidebar navigation
 - Stage routing via URL search params (?stage=jtbd)
 - Problem Statement, JTBD, OST, RICE, and Decision Log forms
@@ -426,26 +427,28 @@ Built:
 - Fixed auto-growing textareas for better scroll performance
 
 Decisions:
-- Changed textareas from `field-sizing-content` to fixed-height (`h-24`) 
+
+- Changed textareas from `field-sizing-content` to fixed-height (`h-24`)
   to solve severe layout thrashing and scroll lag in React.
-- URL search params (e.g., `?stage=rice`) dictate the active form, keeping 
+- URL search params (e.g., `?stage=rice`) dictate the active form, keeping
   state shareable and browser back/forward buttons functional.
-- Status is manually managed via a dropdown rather than automatic progression. 
+- Status is manually managed via a dropdown rather than automatic progression.
   This gives the PM explicit control and avoids confusing UI jumps.
-- "Dashboard" and "Discoveries" serve different jobs: Dashboard is an 
+- "Dashboard" and "Discoveries" serve different jobs: Dashboard is an
   overview (stats + recent), Discoveries is the full list.
 
 Surprise / friction:
-- CORS block: The backend initially blocked PUT/DELETE requests. The agent 
-  caught this during testing and updated `server.ts`. Good catch, but it shows 
+
+- CORS block: The backend initially blocked PUT/DELETE requests. The agent
+  caught this during testing and updated `server.ts`. Good catch, but it shows
   how frontend integration tests are mandatory.
-- Form State/Memory: The "New Discovery" modal originally retained old data 
-  because it didn't unmount. Fixed by wrapping the modal in conditional rendering 
-  (`{isOpen && ...}`). 
-- React Hook Form: Default values for the "Lead Name" locked the input field. 
-  Fixed by keeping the field as a string during editing and using Zod to map 
+- Form State/Memory: The "New Discovery" modal originally retained old data
+  because it didn't unmount. Fixed by wrapping the modal in conditional rendering
+  (`{isOpen && ...}`).
+- React Hook Form: Default values for the "Lead Name" locked the input field.
+  Fixed by keeping the field as a string during editing and using Zod to map
   empty strings to `undefined` only on submit.
-- The AI agent writes logic quickly, but human QA remains mandatory. It didn't 
+- The AI agent writes logic quickly, but human QA remains mandatory. It didn't
   "feel" the scroll lag or the frustration of not being able to erase an input.
 
 Next: Milestone 12 — Export UI and Deployment (Self-Hosted).

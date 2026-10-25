@@ -48,6 +48,10 @@ export type ProblemStatementFramework = FrameworkInstance<
   typeof PROBLEM_STATEMENT_KEY
 >;
 
+export type DiscoveryExport = {
+  markdown: string;
+};
+
 export const workspaceKeys = {
   all: ['workspace'] as const,
   discovery: (discoveryId: string) =>
@@ -66,6 +70,15 @@ function frameworkPath(
 export function fetchDiscovery(discoveryId: string): Promise<DiscoveryOutput> {
   return api.get<DiscoveryOutput>(
     `/discoveries/${encodeURIComponent(discoveryId)}`,
+  );
+}
+
+/** Server-rendered Markdown for one discovery and its framework content. */
+export function fetchDiscoveryExport(
+  discoveryId: string,
+): Promise<DiscoveryExport> {
+  return api.get<DiscoveryExport>(
+    `/discoveries/${encodeURIComponent(discoveryId)}/export`,
   );
 }
 

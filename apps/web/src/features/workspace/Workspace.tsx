@@ -9,6 +9,7 @@ import { fetchDiscovery, workspaceKeys } from './api';
 import { DecisionLogForm } from './DecisionLogForm';
 import { DeleteDiscoveryDialog } from './DeleteDiscoveryDialog';
 import { DiscoveryStatusSelect } from './DiscoveryStatusSelect';
+import { ExportDiscoveryButton } from './ExportDiscoveryButton';
 import { JtbdForm } from './JtbdForm';
 import { OstForm } from './OstForm';
 import { ProblemStatementForm } from './ProblemStatementForm';
@@ -63,6 +64,10 @@ export function Workspace() {
               <DiscoveryStatusSelect
                 discoveryId={discovery.id}
                 status={discovery.status}
+              />
+              <ExportDiscoveryButton
+                discoveryId={discovery.id}
+                discoveryName={discovery.name}
               />
               <DeleteDiscoveryDialog
                 discoveryId={discovery.id}

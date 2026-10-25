@@ -3,7 +3,7 @@
 This file is the contract. Every AI coding session reads it first.
 When a decision changes, update this file, not the conversation.
 
-Last updated: 2026-10-21
+Last updated: 2026-10-24
 
 ---
 
@@ -85,12 +85,14 @@ Last updated: 2026-10-21
   workspace package that needs to run directly).
 - Prod: `tsc` builds `apps/api` and `packages/shared` to `dist/`;
   Node runs compiled JS.
-- `packages/shared` build step deferred to M12. Dev uses `tsx`,
-  which resolves `.ts` sources directly. Prod build is only needed
-  at deploy time. Keeping build-system work out of feature
-  milestones (M5-M8) avoids mixing concerns.
+- `packages/shared` build lands in M12: `tsc` emits `dist/` and
+  `main`/`types` point there, so prod code imports built JS and
+  declarations. Dev and typecheck therefore need that build once;
+  run `pnpm build` (which orders shared first) or
+  `pnpm --filter @discoverylab/shared build` before `pnpm dev`.
 - Rationale: typecheck-only isn't enough for a real server. But
-  forcing a rebuild in dev kills feedback speed. Split dev/prod.
+  forcing a rebuild in dev kills feedback speed. Split dev/prod,
+  and let pnpm's topological order build shared before api/web.
 
 ### Frontend
 
@@ -136,45 +138,56 @@ Last updated: 2026-10-21
 
 ### Deployment plan
 
-Targets (locked early to avoid retrofit):
+Target (locked early to avoid retrofit):
 
-- **Web:** Vercel — Vite static build served from `dist/`.
-- **API:** Render — Node web service running `node dist/index.js`.
-- **DB:** Neon — managed Postgres 16.
+- **Server:** self-hosted Linux, with Nginx as the single public
+  origin.
+- **Web:** Vite static build served from `apps/web/dist/` by Nginx.
+- **API:** Node web service running `node dist/index.js`, reverse
+  proxied by Nginx at `/api`.
+- **DB:** Neon managed Postgres 16 (unchanged).
+
+Nginx routes `/api` to the API and everything else to the static
+web build, so the browser and API share one origin. There is no
+separate web origin in production.
 
 Production environment variables for the API:
 
 - `NODE_ENV=production`
-- `PORT` — provided by Render.
+- `PORT` — API listen port, provided by the host/process manager.
 - `DATABASE_URL` — Neon connection string. Requires
   `?sslmode=require`.
-- `WEB_ORIGIN` — the Vercel URL, e.g.
-  `https://discoverylab.vercel.app`.
+- `WEB_ORIGIN` — the public origin, e.g.
+  `https://discoverylab.example.com`.
 - `LOG_LEVEL=info`
 
 Cookie behavior (affects M5):
 
 - Development: `SameSite=Lax`, `Secure=false` (localhost HTTP).
-- Production: `SameSite=None`, `Secure=true` (cross-site API/web).
+- Production: `SameSite=Lax`, `Secure=true` (same-origin behind
+  Nginx). `Lax` is sufficient because the browser talks to one
+  origin; it also avoids third-party-cookie blocking.
 - Driven by `NODE_ENV`, not a separate env var.
 
 Prod build:
 
 - API: `tsc` to `dist/`, run `node dist/index.js`.
-- Web: `vite build` to `dist/`, served by Vercel.
+- Web: `vite build` to `dist/`, served by Nginx.
 - `packages/shared`: built to `dist/` so the API can import it
-  at runtime. Lands in M12.
-- Migrations: `prisma migrate deploy` on Render's deploy hook.
+  at runtime; the root `pnpm build` compiles it before api/web.
+- Migrations: `prisma migrate deploy` on the deploy hook.
 
 What M4 must respect:
 
 - Config module reads `NODE_ENV` and behaves differently per
   environment.
 - CORS allows credentials and uses `WEB_ORIGIN` exactly.
-- No HTTPS handling in code — Render and Vercel terminate TLS.
-- No custom domain in v1. If we later move web to
-  `app.discoverylab.com` and API to `api.discoverylab.com`, we
-  can switch cookies back to `SameSite=Lax`. Deferred to v2.
+- No HTTPS handling in code — Nginx terminates TLS.
+- v1 uses one public origin. Splitting web and API onto separate
+  subdomains would require revisiting the cookie policy; deferred
+  to v2.
+- M12 prepares the code and build scripts only. Dockerfiles and
+  Nginx configuration are out of scope for this milestone.
 
 ### Shared
 

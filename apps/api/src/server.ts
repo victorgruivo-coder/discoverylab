@@ -66,7 +66,7 @@ function toClientDetails(details: unknown): unknown {
 /** Builds the Fastify instance fully configured, but never listening. */
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify({
-    // Render terminates TLS, so the client IP arrives in X-Forwarded-For.
+    // Nginx terminates TLS, so the client IP arrives in X-Forwarded-For.
     trustProxy: isProduction,
     logger: isDevelopment
       ? {

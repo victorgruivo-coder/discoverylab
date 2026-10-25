@@ -51,3 +51,14 @@ export const config = Object.freeze(readEnv());
 /** Compare against these instead of NODE_ENV directly (M5 cookie flags). */
 export const isProduction = config.NODE_ENV === 'production';
 export const isDevelopment = config.NODE_ENV === 'development';
+
+/**
+ * Session cookie flags that vary by environment. In production the web app and
+ * `/api` share one origin behind Nginx, so `Lax` is sufficient and avoids
+ * third-party-cookie blocking. `Secure` is still required because the public
+ * origin is HTTPS (Nginx terminates TLS).
+ */
+export const sessionCookieFlags = Object.freeze({
+  sameSite: 'lax' as const,
+  secure: isProduction,
+});
