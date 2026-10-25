@@ -75,9 +75,10 @@ Last updated: 2026-10-24
 - **Email verification:** deferred to v2.
 - **Forgot password:** deferred to v2.
 - **Rate limiting:** 10 login attempts / 15 min per IP.
-- **CORS:** credentials: true. Production allows only `WEB_ORIGIN`;
-  development reflects any origin because the Vite proxy is the normal
-  path and LAN/tunnel access must keep working.
+- **CORS:** credentials: true. Production allows exactly the origins
+  in `WEB_ORIGINS` (comma-separated trusted list: localhost, LAN IP
+  and public domain). Development reflects any origin because the Vite
+  proxy is the normal path and LAN/tunnel access must keep working.
 
 ## Stack
 
@@ -120,7 +121,10 @@ Last updated: 2026-10-24
 
 - PostgreSQL
 - Local dev: Docker Compose
-- Prod: managed Postgres (Neon or Supabase)
+- Prod: Postgres 16 container in `docker-compose.prod.yml`
+  (self-hosted, `postgres_data` volume). Managed Neon/Supabase is
+  still supported by pointing `DATABASE_URL` at it and removing the
+  compose `db` service.
 
 ### Database tooling
 
@@ -142,60 +146,122 @@ Last updated: 2026-10-24
 
 Target (locked early to avoid retrofit):
 
-- **Server:** self-hosted Linux, with Nginx as the single public
-  origin.
-- **Web:** Vite static build served from `apps/web/dist/` by Nginx.
+- **Server:** self-hosted Linux, with Caddy as the public edge
+  (TLS termination and trusted hostname list).
+- **Web:** Vite static build served from `apps/web/dist/` by Caddy.
 - **API:** Node web service running `node dist/index.js`, reverse
-  proxied by Nginx at `/api`.
-- **DB:** Neon managed Postgres 16 (unchanged).
+  proxied by Caddy at `/api`.
+- **DB:** Postgres 16 container in `docker-compose.prod.yml`,
+  persisted to the `postgres_data` volume. Managed Neon/Supabase
+  remains supported via `DATABASE_URL`; the compose `db` service is
+  the self-hosted default.
 
-Nginx routes `/api` to the API and everything else to the static
-web build, so the browser and API share one origin. There is no
-separate web origin in production.
+Caddy serves the SPA and proxies `/api` for every hostname in
+`DOMAINS`, so each browser talks to one origin at a time. The API
+accepts the matching full origins from `WEB_ORIGINS`; localhost, LAN
+IP and the public domain can coexist in the same stack.
+
+Production container topology (M12 Part 2):
+
+- `apps/api/Dockerfile` — multi-stage `node:22-alpine`; the runner
+  carries production dependencies only and runs `node dist/index.js`
+  on port 3000.
+- `apps/web/Dockerfile` — Vite build served by `caddy:alpine` on
+  ports 80/443; Caddy terminates TLS and proxies `/api`.
+- `Caddyfile` — env-driven site list (`{$DOMAINS}`, comma-separated),
+  SPA fallback (`try_files {path} /index.html`), `encode gzip`, and
+  `/api/*` -> `http://api:3000`. The web entrypoint normalizes the
+  comma list before Caddy parses it (Caddy expands env vars before
+  tokenizing). Caddy uses its internal CA for localhost/private IPs
+  and a public ACME certificate (Let's Encrypt by default) for public
+  names.
+- `caddy-entrypoint.sh` — normalizes the comma-separated `DOMAINS`
+  list to `a, b, c` before starting Caddy (environment substitution
+  happens before Caddy tokenizes the file).
+- `docker-compose.prod.yml` — `db`, `api`, `web` plus a one-shot
+  `migrate` service on one bridge network; only `web` publishes host
+  ports (`80:80`, `443:443`).
+- `migrate` builds the API `builder` stage (which has the Prisma CLI),
+  runs `prisma migrate deploy` once `db` is healthy, and exits. `api`
+  starts only after `migrate` completes successfully.
+- Caddy stores certificates and account state in the `caddy_data` and
+  `caddy_config` named volumes, so they survive container recreation.
+- TLS is terminated by Caddy inside the stack. Public names in
+  `DOMAINS` must resolve to the server and ports 80/443 must be
+  reachable for issuance; localhost/private IPs use the internal CA.
+
+Trusted domains (Nextcloud-style):
+
+- `DOMAINS` (web) is the Caddy site list: hostnames only,
+  comma-separated, no scheme. The entrypoint normalizes it before
+  Caddy parses the Caddyfile.
+- `WEB_ORIGINS` (API) is the CORS allow-list: full origins with a
+  scheme, comma-separated, mirroring every `DOMAINS` entry.
+- Keep both lists in sync. Adding a hostname means adding it to both
+  env vars and recreating the `web`/`api` containers.
+- Cookies remain `Secure`/`SameSite=Lax` for every hostname, so
+  localhost and LAN testing use Caddy's HTTPS (internal CA), not HTTP.
+  Caddy's internal root lives in the `caddy_data` volume; trust it or
+  accept the browser warning for those hosts.
 
 Local development: the web app calls the relative path `/api/v1`,
 and Vite proxies `/api` to the API on `localhost:3000`. Dev uses a
-Vite proxy to avoid CORS. Prod uses Nginx for the same purpose
-(single origin).
+Vite proxy to avoid CORS. Prod uses Caddy, so each trusted hostname
+serves web and `/api` from one origin.
 
-Production environment variables for the API:
+Production environment variables:
 
+API:
 - `NODE_ENV=production`
-- `PORT` — API listen port, provided by the host/process manager.
-- `DATABASE_URL` — Neon connection string. Requires
-  `?sslmode=require`.
-- `WEB_ORIGIN` — the public origin, e.g.
-  `https://discoverylab.example.com`.
+- `PORT` — API listen port; `3000` in the compose stack.
+- `DATABASE_URL` — Postgres connection string. Use the compose
+  `db` service for self-hosting, or a managed Neon/Supabase URL
+  (which requires `?sslmode=require`).
+- `WEB_ORIGINS` — comma-separated trusted browser origins for the
+  CORS allow-list, e.g.
+  `https://localhost,https://192.168.0.9,https://discovery.vruivo.com.br`.
+  Must mirror `DOMAINS`, with a scheme; use `https://` because
+  production cookies are Secure. Whitespace and trailing slashes are
+  normalized.
 - `LOG_LEVEL=info`
+
+Web/edge:
+- `DOMAINS` — comma-separated hostnames Caddy serves, e.g.
+  `localhost,192.168.0.9,discovery.vruivo.com.br`. Caddy uses its
+  internal CA for localhost/private IPs and ACME for public names.
 
 Cookie behavior (affects M5):
 
 - Development: `SameSite=Lax`, `Secure=false` (localhost HTTP).
-- Production: `SameSite=Lax`, `Secure=true` (same-origin behind
-  Nginx). `Lax` is sufficient because the browser talks to one
-  origin; it also avoids third-party-cookie blocking.
+- Production: `SameSite=Lax`, `Secure=true` (each hostname is a
+  same-origin Caddy site). `Lax` is sufficient because the browser
+  talks to one origin at a time; it also avoids third-party-cookie
+  blocking. Every `DOMAINS` entry must be visited over HTTPS.
 - Driven by `NODE_ENV`, not a separate env var.
 
 Prod build:
 
 - API: `tsc` to `dist/`, run `node dist/index.js`.
-- Web: `vite build` to `dist/`, served by Nginx.
+- Web: `vite build` to `dist/`, served by Caddy.
 - `packages/shared`: built to `dist/` so the API can import it
   at runtime; the root `pnpm build` compiles it before api/web.
-- Migrations: `prisma migrate deploy` on the deploy hook.
+- Migrations: `prisma migrate deploy` in the one-shot `migrate`
+  service; `api` waits for it to finish.
 
 What M4 must respect:
 
 - Config module reads `NODE_ENV` and behaves differently per
   environment.
-- CORS allows credentials. Production uses `WEB_ORIGIN` exactly;
-  development reflects any origin for LAN/tunnel access.
-- No HTTPS handling in code — Nginx terminates TLS.
-- v1 uses one public origin. Splitting web and API onto separate
-  subdomains would require revisiting the cookie policy; deferred
-  to v2.
-- M12 prepares the code and build scripts only. Dockerfiles and
-  Nginx configuration are out of scope for this milestone.
+- CORS allows credentials. Production allows exactly the
+  `WEB_ORIGINS` list; development reflects any origin for LAN/tunnel
+  access.
+- No HTTPS handling in code — Caddy terminates TLS.
+- Each trusted hostname serves both web and `/api`.
+  Splitting web and API onto different origins would require
+  revisiting the cookie policy; deferred to v2.
+- M12 delivers the production build scripts plus the Docker/Caddy
+  deployment files. Caddy handles TLS termination, renewal and the
+  trusted multi-domain site list.
 
 ### Shared
 
@@ -242,7 +308,9 @@ What M4 must respect:
   `localhost:5432` (database `discoverylab`, user `discoverylab`).
 - Do NOT use `prisma dev`. It creates a Prisma-managed database
   that would shadow the Docker one.
-- Do NOT add a second Postgres container, service, or data dir.
+- Do NOT add a second Postgres container, service, or data dir
+  for local development. The production stack's `db` service in
+  `docker-compose.prod.yml` is separate and runs only on the server.
 - If the database is unreachable, STOP and report. Do not
   invent infrastructure to work around it. The correct fix is
   `sudo docker compose up -d`.

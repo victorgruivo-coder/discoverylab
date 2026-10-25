@@ -66,7 +66,7 @@ function toClientDetails(details: unknown): unknown {
 /** Builds the Fastify instance fully configured, but never listening. */
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify({
-    // Nginx terminates TLS, so the client IP arrives in X-Forwarded-For.
+    // Caddy terminates TLS, so the client IP arrives in X-Forwarded-For.
     trustProxy: isProduction,
     logger: isDevelopment
       ? {
@@ -80,9 +80,10 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // Development may be opened through localhost, a LAN IP, or a tunnel, so
   // reflect whatever origin the browser sends (credentials stay allowed). The
-  // Vite proxy is the normal path; production keeps exactly one origin.
+  // Vite proxy is the normal path. Production allows only the trusted origins
+  // in WEB_ORIGINS (localhost, LAN IP and public domain can coexist).
   await app.register(cors, {
-    origin: isDevelopment ? true : config.WEB_ORIGIN,
+    origin: isDevelopment ? true : config.WEB_ORIGINS,
     credentials: true,
     // The web client reads (GET), creates (POST), saves frameworks (PUT),
     // edits (PATCH), and deletes (DELETE) through this API.

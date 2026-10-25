@@ -1,0 +1,133 @@
+# DiscoveryLab — production stack.
+#
+# One app, multiple trusted hostnames: Caddy (web) serves the SPA and proxies
+# /api for every hostname in DOMAINS, so each browser sees a single origin.
+# The API CORS allow-list is WEB_ORIGINS; keep the two lists in sync. Only web
+# publishes host ports.
+#
+# Usage:
+#   cp .env.prod.example .env.prod
+#   # edit .env.prod
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+#
+# The defaults below exist so `docker compose config` runs without an env
+# file; production must pass --env-file .env.prod (or export the variables).
+#
+# Schema migrations run in the one-shot `migrate` service, built from the API
+# builder stage (the production runner has no Prisma CLI). `api` waits for it
+# to exit 0 before starting.
+#
+# Caddy obtains and renews certificates automatically: localhost and private
+# IPs use its internal CA, public names use ACME and must resolve to this
+# server with ports 80/443 reachable. Production cookies are Secure, so HTTPS
+# is required.
+
+name: discoverylab-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-discoverylab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-discoverylab}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - discoverylab
+
+  # One-shot schema migration. The production runner has no Prisma CLI, so
+  # this uses the builder stage, which has the CLI, the schema and the
+  # migrations. `api` waits for this container to exit 0.
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: builder
+    image: discoverylab-api-migrate:latest
+    restart: 'no'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://discoverylab:change-me@db:5432/discoverylab?schema=public}
+    command:
+      - pnpm
+      - --filter
+      - '@discoverylab/api'
+      - exec
+      - prisma
+      - migrate
+      - deploy
+    networks:
+      - discoverylab
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: discoverylab-api:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      DATABASE_URL: ${DATABASE_URL:-postgresql://discoverylab:change-me@db:5432/discoverylab?schema=public}
+      WEB_ORIGINS: ${WEB_ORIGINS:-https://localhost,https://192.168.0.9,https://discovery.vruivo.com.br}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    expose:
+      - '3000'
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/v1/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - discoverylab
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: discoverylab-web:latest
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      DOMAINS: ${DOMAINS:-localhost,192.168.0.9,discovery.vruivo.com.br}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      # Persist the ACME account, certificates and Caddy config across
+      # container recreation; without these, certificates are reissued.
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - discoverylab
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  discoverylab:
+    driver: bridge

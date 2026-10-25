@@ -1,0 +1,32 @@
+# DiscoveryLab — production Caddy config.
+#
+# {$DOMAINS} is the comma-separated hostname list from the web service env
+# (docker-compose.prod.yml), e.g.
+#   localhost,192.168.0.9,discovery.vruivo.com.br
+#
+# Caddy expands environment variables before tokenizing the Caddyfile, so the
+# entrypoint normalizes that list to "a, b, c" first; otherwise Caddy would see
+# one token and reject it as a site address containing a comma.
+#
+# Automatic HTTPS uses Caddy's internal CA for localhost and private IPs, and a
+# public ACME certificate (Let's Encrypt by default) for public names. No
+# explicit `tls internal` directive is needed.
+#
+# Certificates and account state live in /data (and /config); the compose
+# stack mounts named volumes there so they survive container recreation.
+
+{$DOMAINS} {
+    encode gzip
+
+    # API: keep the /api prefix; Fastify is mounted at /api/v1.
+    handle /api/* {
+        reverse_proxy http://api:3000
+    }
+
+    # React SPA: serve real files, fall back to index.html for client routes.
+    handle {
+        root * /usr/share/caddy
+        try_files {path} /index.html
+        file_server
+    }
+}

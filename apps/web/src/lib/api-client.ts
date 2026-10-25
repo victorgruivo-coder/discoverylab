@@ -1,4 +1,4 @@
-/** Relative by default: dev uses the Vite proxy, prod uses Nginx. */
+/** Relative by default: dev uses the Vite proxy, prod uses Caddy. */
 const DEFAULT_API_URL = '/api/v1';
 
 /** The standard error body every API endpoint returns (docs/decisions.md). */
