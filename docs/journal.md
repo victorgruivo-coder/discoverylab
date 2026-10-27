@@ -452,3 +452,38 @@ Surprise / friction:
   "feel" the scroll lag or the frustration of not being able to erase an input.
 
 Next: Milestone 12 — Export UI and Deployment (Self-Hosted).
+
+## Milestone 12 — Export UI, Docker, and Production Infrastructure
+
+Date: 2026-10-2X
+Time: ~Xh
+
+Built:
+- Markdown Export button with client-side Blob download
+- Multi-stage Dockerfiles for API and Web (production builds)
+- Caddy as a reverse proxy for automatic HTTPS/SSL
+- Docker Compose production stack with automated Prisma migrations
+- Nextcloud-style trusted domains (DOMAINS/WEB_ORIGINS) to test localhost, LAN IP, and prod simultaneously
+
+Decisions:
+- Switched from Nginx to Caddy. Caddy handles Let's Encrypt certificates 
+  automatically, eliminating the need for manual Certbot cron jobs.
+- Added a one-shot `migrate` service to Docker Compose. The API only starts 
+  after `prisma migrate deploy` finishes successfully, preventing boot crashes.
+- Implemented a custom `caddy-entrypoint.sh` to normalize comma-separated 
+  domain lists, solving Caddy's parsing limitation with multiple domains.
+- Shifted to Vite proxy for local development to mirror the single-origin 
+  architecture we use in production (Nginx/Caddy), removing the need for manual 
+  CORS `.env` changes on LAN.
+
+Surprise / friction:
+- Caddy cannot serve HTTPS directly on a raw local IP (like 192.168.x.x) due to 
+  TLS SNI limitations. Mobile browsers block self-signed certs completely.
+  Lesson: Use `*.local` domains or HTTP for local LAN testing. In production, 
+  Caddy + Let's Encrypt solves this completely.
+- React Hook Form + Modals: The agent fixed a state leak where the form retained 
+  old data. Fixed via conditional unmounting and Zod's `safeExtend`.
+- Next time: Plan the deployment strategy (DNS, server access, SSL) earlier 
+  in the project to avoid infrastructure scrambling at the end.
+
+Next: Final deployment to the Linux server at discovery.vruivo.com.br.
