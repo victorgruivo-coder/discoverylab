@@ -1,4 +1,4 @@
-# DiscoveryLab — Development Plan
+# DiscoveryLab — Development Plan (MVP Shipped)
 
 12 milestones. Each is 1–2 days. Never start a milestone
 before the previous one is verified and committed.
@@ -32,7 +32,7 @@ before the previous one is verified and committed.
 | 9   | Web scaffold        | Vite, Tailwind, shadcn, router, API client  | 8          | ✅     |
 | 10  | Auth UI + Dashboard | Login, signup, list/create/delete           | 9          | ✅     |
 | 11  | Wizard workspace    | Stage nav, framework forms, autosave        | 10         | ✅     |
-| 12  | Polish + Deploy     | E2E, error states, deploy, README           | 11         | ⬜     |
+| 12  | Polish + Deploy     | E2E, error states, deploy, README           | 11         | ✅     |
 
 ## Milestone template
 

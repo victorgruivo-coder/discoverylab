@@ -22,3 +22,4 @@ apps/api/src/generated/
 
 # Reasonix session scratch (task snapshots from background jobs)
 .reasonix/
+.vscode/
