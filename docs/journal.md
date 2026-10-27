@@ -455,8 +455,8 @@ Next: Milestone 12 — Export UI and Deployment (Self-Hosted).
 
 ## Milestone 12 — Export UI, Docker, and Production Infrastructure
 
-Date: 2026-10-2X
-Time: ~Xh
+Date: 2026-10-27
+Time: ~2h
 
 Built:
 - Markdown Export button with client-side Blob download
@@ -486,4 +486,5 @@ Surprise / friction:
 - Next time: Plan the deployment strategy (DNS, server access, SSL) earlier 
   in the project to avoid infrastructure scrambling at the end.
 
-Next: Final deployment to the Linux server at discovery.vruivo.com.br.
+Status: MVP successfully deployed to production at discovery.vruivo.com.br.
+Next: v2 (Team collaboration, PDF export, rich text editor).
